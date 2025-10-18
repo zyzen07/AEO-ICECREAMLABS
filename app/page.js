@@ -1,180 +1,124 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import Header from '@/components/Header'
-import ProjectSetup from '@/components/ProjectSetup'
-import KeywordsManager from '@/components/KeywordsManager'
-import StatsGrid from '@/components/StatsGrid'
-import VisibilityChart from '@/components/VisibilityChart'
-import EngineTable from '@/components/EngineTable'
-import KeywordsTable from '@/components/KeywordsTable'
-import Recommendations from '@/components/Recommendations'
-import DrillDownModal from '@/components/DrillDownModal'
-import { loadData, saveData } from '@/lib/storage'
-import { generateSeedData, simulateChecks } from '@/lib/dataGenerator'
+import Link from 'next/link'
 
 export default function Home() {
-  const [currentProject, setCurrentProject] = useState(null)
-  const [keywords, setKeywords] = useState([])
-  const [checks, setChecks] = useState([])
-  const [showDashboard, setShowDashboard] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [currentPeriod, setCurrentPeriod] = useState(7)
-  const [drillDownData, setDrillDownData] = useState(null)
-
-  // Load data on mount
-  useEffect(() => {
-    const data = loadData()
-    if (data.currentProject) {
-      setCurrentProject(data.currentProject)
-      setKeywords(data.keywords || [])
-      setChecks(data.checks || [])
-      if (data.checks && data.checks.length > 0) {
-        setShowDashboard(true)
-      }
-    }
-  }, [])
-
-  // Save data whenever it changes
-  useEffect(() => {
-    if (currentProject) {
-      saveData({ currentProject, keywords, checks })
-    }
-  }, [currentProject, keywords, checks])
-
-  const handleProjectSave = (project, projectKeywords) => {
-    setCurrentProject(project)
-    setKeywords(projectKeywords)
-    if (checks.length === 0) {
-      setShowDashboard(true)
-    }
-  }
-
-  const handleAddKeywords = (newKeywords) => {
-    const uniqueKeywords = [...new Set([...keywords, ...newKeywords])]
-    setKeywords(uniqueKeywords)
-  }
-
-  const handleRemoveKeyword = (index) => {
-    const kw = keywords[index]
-    const newKeywords = keywords.filter((_, i) => i !== index)
-    const newChecks = checks.filter(c => c.keyword !== kw)
-    setKeywords(newKeywords)
-    setChecks(newChecks)
-  }
-
-  const handleSeedData = async () => {
-    if (!currentProject || keywords.length === 0) {
-      alert('Setup project and keywords first')
-      return
-    }
-    setLoading(true)
-    setTimeout(() => {
-      const newChecks = generateSeedData(keywords, currentProject)
-      setChecks(newChecks)
-      setShowDashboard(true)
-      setLoading(false)
-      alert(`Seeded 14 days of data! (${newChecks.length} checks generated)`)
-    }, 1000)
-  }
-
-  const handleRunChecks = async () => {
-    if (!currentProject || keywords.length === 0) return
-    setLoading(true)
-    setTimeout(() => {
-      const newChecks = simulateChecks(keywords, currentProject)
-      setChecks([...checks, ...newChecks])
-      setShowDashboard(true)
-      setLoading(false)
-      alert(`Generated ${newChecks.length} new checks!`)
-    }, 1500)
-  }
-
-  const handleDrillDown = (type, value) => {
-    setDrillDownData({ type, value })
-  }
-
-  const closeDrillDown = () => {
-    setDrillDownData(null)
-  }
-
   return (
-    <div className={loading ? 'loading' : ''}>
-      <Header 
-        onRunChecks={handleRunChecks}
-        onSeedData={handleSeedData}
-        canRunChecks={currentProject && keywords.length > 0}
-      />
-      
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Setup Section */}
-        <ProjectSetup 
-          currentProject={currentProject}
-          keywords={keywords}
-          onSave={handleProjectSave}
-        />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
+      {/* Navigation */}
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center max-w-7xl">
+          <div className="flex items-center space-x-2">
+            <span className="text-3xl">🎯</span>
+            <h1 className="text-2xl font-bold text-indigo-600">AEO Tracker</h1>
+          </div>
+          <div className="flex space-x-3">
+            <Link 
+              href="/login"
+              className="px-5 py-2.5 text-indigo-600 font-semibold hover:text-indigo-700 transition-all"
+            >
+              Sign In
+            </Link>
+            <Link 
+              href="/signup"
+              className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all btn-effect"
+            >
+              Get Started
+            </Link>
+          </div>
+        </div>
+      </nav>
 
-        {/* Keywords Manager */}
-        <KeywordsManager 
-          keywords={keywords}
-          onAdd={handleAddKeywords}
-          onRemove={handleRemoveKeyword}
-          hasProject={!!currentProject}
-        />
+      {/* Hero Section */}
+      <div className="container mx-auto px-4 py-20 max-w-6xl">
+        <div className="text-center mb-16">
+          <div className="inline-block p-4 bg-white rounded-full shadow-xl mb-6 animate-fadeIn">
+            <span className="text-6xl">🎯</span>
+          </div>
+          <h1 className="text-6xl font-bold text-gray-900 mb-6 animate-fadeIn">
+            AEO Tracker
+          </h1>
+          <p className="text-2xl text-gray-700 mb-4 animate-fadeIn">
+            Monitor your AI search visibility across
+          </p>
+          <p className="text-xl text-gray-600 mb-8">
+            ChatGPT • Gemini • Claude • Perplexity
+          </p>
+          <div className="flex justify-center space-x-4 animate-fadeIn">
+            <Link 
+              href="/signup"
+              className="px-8 py-4 bg-indigo-600 text-white rounded-lg font-bold text-lg hover:bg-indigo-700 transition-all btn-effect shadow-lg"
+            >
+              Get Started Free 🚀
+            </Link>
+            <Link 
+              href="/login"
+              className="px-8 py-4 bg-white text-indigo-600 rounded-lg font-bold text-lg hover:bg-gray-50 transition-all btn-effect shadow-lg border-2 border-indigo-600"
+            >
+              Sign In →
+            </Link>
+          </div>
+        </div>
 
-        {/* Dashboard */}
-        {showDashboard && (
-          <>
-            <div className="mb-8 animate-fadeIn">
-              <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-              <p className="text-gray-600">Monitor your AI search visibility across major engines</p>
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-3 gap-8 mt-20">
+          <div className="bg-white p-8 rounded-xl shadow-lg text-center card-hover transform transition-all hover:scale-105">
+            <div className="text-5xl mb-4">📊</div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900">Real-Time Tracking</h3>
+            <p className="text-gray-600">Monitor your visibility across 4 major AI search engines in real-time</p>
+          </div>
+          <div className="bg-white p-8 rounded-xl shadow-lg text-center card-hover transform transition-all hover:scale-105">
+            <div className="text-5xl mb-4">🎯</div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900">Keyword Analysis</h3>
+            <p className="text-gray-600">Track performance for unlimited keywords and get detailed insights</p>
+          </div>
+          <div className="bg-white p-8 rounded-xl shadow-lg text-center card-hover transform transition-all hover:scale-105">
+            <div className="text-5xl mb-4">📈</div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900">Actionable Insights</h3>
+            <p className="text-gray-600">Get AI-powered recommendations to improve your search presence</p>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="mt-20 bg-white rounded-2xl shadow-xl p-12 text-center">
+          <h2 className="text-4xl font-bold mb-8 text-gray-900">Why Track AI Search Visibility?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div>
+              <div className="text-5xl font-bold text-indigo-600 mb-2">85%</div>
+              <p className="text-gray-600">of users trust AI-generated answers</p>
             </div>
-
-            <StatsGrid 
-              checks={checks}
-              keywords={keywords}
-              period={currentPeriod}
-            />
-
-            <VisibilityChart 
-              checks={checks}
-              currentPeriod={currentPeriod}
-              onPeriodChange={setCurrentPeriod}
-            />
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              <EngineTable 
-                checks={checks}
-                period={currentPeriod}
-                onDrillDown={handleDrillDown}
-              />
-              
-              <Recommendations 
-                checks={checks}
-                keywords={keywords}
-                currentProject={currentProject}
-                period={currentPeriod}
-              />
+            <div>
+              <div className="text-5xl font-bold text-indigo-600 mb-2">4+</div>
+              <p className="text-gray-600">major AI search engines to monitor</p>
             </div>
+            <div>
+              <div className="text-5xl font-bold text-indigo-600 mb-2">24/7</div>
+              <p className="text-gray-600">continuous visibility tracking</p>
+            </div>
+          </div>
+        </div>
 
-            <KeywordsTable 
-              keywords={keywords}
-              checks={checks}
-              period={currentPeriod}
-              onDrillDown={handleDrillDown}
-            />
-          </>
-        )}
-      </main>
+        {/* CTA Section */}
+        <div className="mt-20 text-center">
+          <h2 className="text-4xl font-bold mb-6 text-gray-900">Ready to Get Started?</h2>
+          <p className="text-xl text-gray-600 mb-8">
+            Join thousands of businesses tracking their AI search visibility
+          </p>
+          <Link 
+            href="/signup"
+            className="inline-block px-10 py-5 bg-indigo-600 text-white rounded-lg font-bold text-xl hover:bg-indigo-700 transition-all btn-effect shadow-2xl"
+          >
+            Start Tracking Now - It's Free! 🎉
+          </Link>
+        </div>
+      </div>
 
-      {drillDownData && (
-        <DrillDownModal 
-          data={drillDownData}
-          checks={checks}
-          period={currentPeriod}
-          onClose={closeDrillDown}
-        />
-      )}
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 mt-20">
+        <div className="container mx-auto px-4 py-8 max-w-7xl text-center">
+          <p className="text-gray-600">
+            © 2025 AEO Tracker. Monitor your AI search visibility with confidence.
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }
